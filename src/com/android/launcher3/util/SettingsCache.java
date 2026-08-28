@@ -177,4 +177,8 @@ public class SettingsCache extends ContentObserver {
 
         return newVal;
     }
+
+    public interface OnChangeListener {
+        void onSettingsChanged(boolean isEnabled);
+    }
 }

@@ -25,7 +25,11 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -50,6 +54,7 @@ import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.MultiPropertyFactory.MultiProperty;
 import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.util.MultiValueAlpha;
+import com.android.launcher3.util.Themes;
 import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.widget.PendingAddWidgetInfo;
 
@@ -98,6 +103,8 @@ public class Hotseat extends CellLayout implements Insettable {
     private final MultiPropertyFactory mIconsTranslationXFactory;
 
     private final View mQsb;
+    private final Paint mHotseatBgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF mHotseatBgRect = new RectF();
 
     public Hotseat(Context context) {
         this(context, null);
@@ -281,7 +288,8 @@ public class Hotseat extends CellLayout implements Insettable {
                 lp.width = grid.getHotseatProfile().getBarSizePx() + insets.right;
             }
         } else {
-            mQsb.setVisibility(View.VISIBLE);
+            mQsb.setVisibility(LauncherPrefs.DOCK_SEARCH.get(getContext())
+                    ? View.VISIBLE : View.GONE);
             lp.gravity = Gravity.BOTTOM;
             lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
 
@@ -394,6 +402,21 @@ public class Hotseat extends CellLayout implements Insettable {
      */
     public View getQsb() {
         return mQsb;
+    }
+
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        if (LauncherPrefs.SHOW_HOTSEAT_BG.get(getContext()) && !mHasVerticalHotseat) {
+            int alpha = (LauncherPrefs.HOTSEAT_OPACITY.get(getContext()) * 255) / 100;
+            int base = Themes.getAttrColor(getContext(), android.R.attr.colorBackground);
+            mHotseatBgPaint.setColor(Color.argb(alpha,
+                    Color.red(base), Color.green(base), Color.blue(base)));
+            mHotseatBgRect.set(getPaddingLeft(), getPaddingTop(),
+                    getWidth() - getPaddingRight(), getHeight() - getPaddingBottom());
+            float radius = mHotseatBgRect.height() / 2f;
+            canvas.drawRoundRect(mHotseatBgRect, radius, radius, mHotseatBgPaint);
+        }
+        super.dispatchDraw(canvas);
     }
 
     @Nullable

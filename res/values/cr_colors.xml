@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2016-2025 crDroid Android Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+
+    <!-- Appseat -->
+    <color name="appseat_color">@*android:color/system_neutral2_50</color>
+
+    <!-- Rising -->
+    <color name="op_control_text_color_secondary">#66000000</color>
+    <color name="rising_color">#1C1C1C</color>
+
+    <!-- Widgets -->
+    <color name="battery_device_primary_color">@android:color/system_accent1_200</color>
+    <color name="battery_device_secondary_color">@android:color/system_neutral1_900</color>
+    <color name="themed_icon_color">@android:color/system_accent1_100</color>
+    <color name="qsb_primary">@android:color/system_accent3_50</color>
+    <color name="qsb_secondary">@android:color/system_accent1_200</color>
+    <color name="qsb_tertiary">@android:color/system_accent2_50</color>
+    <color name="qsb_quaternary">@android:color/system_accent1_100</color>
+
+    <color name="primaryBackground">#ffffffff</color>
+    <color name="primaryForeground">#ff000000</color>
+</resources>

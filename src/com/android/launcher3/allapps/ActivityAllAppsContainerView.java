@@ -74,6 +74,7 @@ import com.android.launcher3.DropTarget.DragObject;
 import com.android.launcher3.Flags;
 import com.android.launcher3.Insettable;
 import com.android.launcher3.InsettableFrameLayout;
+import com.android.launcher3.LauncherPrefs;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.allapps.BaseAllAppsAdapter.AdapterItem;
@@ -288,6 +289,12 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
             mSearchContainer.setFocusedByDefault(true);
         }
         mSearchUiManager = (SearchUiManager) mSearchContainer;
+        if (!LauncherPrefs.DRAWER_SEARCH.get(getContext())) {
+            mSearchContainer.setVisibility(GONE);
+        }
+        if (mFastScroller != null && !LauncherPrefs.DRAWER_SCROLLBAR.get(getContext())) {
+            mFastScroller.setVisibility(GONE);
+        }
     }
 
     public List<AllAppsRow> getAdditionalHeaderRows() {

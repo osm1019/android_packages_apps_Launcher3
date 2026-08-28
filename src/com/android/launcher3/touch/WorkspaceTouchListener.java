@@ -31,6 +31,8 @@ import static com.android.launcher3.logging.StatsLogManager.LauncherEvent.LAUNCH
 
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.os.PowerManager;
+import android.os.SystemClock;
 import android.view.GestureDetector;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
@@ -44,6 +46,7 @@ import com.android.launcher3.BoxSelectionHelper;
 import com.android.launcher3.CellLayout;
 import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.Launcher;
+import com.android.launcher3.LauncherPrefs;
 import com.android.launcher3.Workspace;
 import com.android.launcher3.dragndrop.DragLayer;
 import com.android.launcher3.logger.LauncherAtom;
@@ -201,6 +204,22 @@ public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListe
 
     private void cancelLongPress() {
         mLongPressState = STATE_CANCELLED;
+    }
+
+    @Override
+    public boolean onDoubleTap(MotionEvent event) {
+        if (!LauncherPrefs.SLEEP_GESTURE.get(mLauncher) || !canHandleLongPress()) {
+            return false;
+        }
+        if (LauncherPrefs.SLEEP_GESTURE_HAPTIC.get(mLauncher)) {
+            mWorkspace.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY,
+                    HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+        }
+        PowerManager pm = mLauncher.getSystemService(PowerManager.class);
+        if (pm != null) {
+            pm.goToSleep(SystemClock.uptimeMillis());
+        }
+        return true;
     }
 
     @Override

@@ -38,6 +38,8 @@
     </style>
 
     <style name="LauncherTheme" parent="@style/DynamicColorsBaseLauncherTheme">
+        <item name="qsbFillColor">#FFFFFFFF</item>
+        <item name="qsbFillColorThemed">#FFE8EAED</item>
         <item name="android:textColorSecondary">#DE000000</item>
         <item name="groupHighlight">@color/materialColorSurfaceContainerHigh</item>
         <item name="allAppsScrimColor">@color/materialColorSurfaceDim</item>
@@ -117,6 +119,8 @@
     </style>
 
     <style name="LauncherTheme.Dark" parent="@style/LauncherTheme">
+        <item name="qsbFillColor">#FF303030</item>
+        <item name="qsbFillColorThemed">#FF3C4043</item>
         <item name="android:textColorPrimary">@color/text_color_primary_dark</item>
         <item name="android:textColorSecondary">@color/text_color_secondary_dark</item>
         <item name="android:textColorTertiary">@color/text_color_tertiary_dark</item>

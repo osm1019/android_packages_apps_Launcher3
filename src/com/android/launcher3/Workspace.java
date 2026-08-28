@@ -725,8 +725,17 @@ public class Workspace<T extends View & PageIndicator> extends PagedView<T>
      * Initializes and binds the first page
      */
     public void bindAndInitFirstWorkspaceScreen() {
-        // Add the first page
-        insertNewWorkspaceScreen(Workspace.FIRST_SCREEN_ID, getChildCount());
+        CellLayout firstPage = insertNewWorkspaceScreen(Workspace.FIRST_SCREEN_ID, getChildCount());
+        if (!LauncherPrefs.SHOW_QUICKSPACE.get(getContext())) {
+            return;
+        }
+        View quickspace = LayoutInflater.from(getContext())
+                .inflate(R.layout.reserved_container_workspace, firstPage, false);
+        int cellHSpan = mLauncher.getDeviceProfile().inv.numSearchContainerColumns;
+        CellLayoutLayoutParams lp = new CellLayoutLayoutParams(0, 0, cellHSpan, 1);
+        lp.canReorder = false;
+        firstPage.addViewToCellLayout(
+                quickspace, 0, R.id.reserved_container_workspace, lp, true);
     }
 
     public void removeAllWorkspaceScreens() {

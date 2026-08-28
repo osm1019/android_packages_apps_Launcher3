@@ -18,10 +18,12 @@ package com.android.launcher3.icons
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.content.pm.ComponentInfo
 import android.content.pm.PackageItemInfo
 import android.content.res.Resources.NotFoundException
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
+import android.os.UserHandle
 import android.util.Log
 import com.android.launcher3.LauncherModel
 import com.android.launcher3.dagger.ApplicationContext
@@ -62,6 +64,15 @@ constructor(
     }
 
     private var processor: IconProcessorPlugin? = null
+
+    override fun getIcon(info: ComponentInfo, iconDpi: Int): Drawable {
+        val key = ComponentKey(
+            info.componentName,
+            UserHandle.getUserHandleForUid(info.applicationInfo.uid),
+        )
+        val fallback = { super.getIcon(info, iconDpi) }
+        return ThirdPartyIconUtils.getByKey(mContext, key, iconDpi, fallback) ?: fallback()
+    }
 
     override fun getApplicationInfoHash(appInfo: ApplicationInfo) =
         mSystemState.withAdditionalValues(

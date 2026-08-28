@@ -16,6 +16,7 @@
 package com.android.launcher3
 
 import android.content.Context
+import android.widget.Toast
 import com.android.launcher3.dagger.ApplicationContext
 import com.android.launcher3.icons.IconCache
 import com.android.launcher3.icons.LauncherIconProvider
@@ -36,7 +37,20 @@ constructor(
     @Named("SAFE_MODE") val isSafeModeEnabled: Boolean,
 ) {
 
+    fun setNeedsRestart() {
+        needsRestart = true
+    }
+
+    fun checkIfRestartNeeded() {
+        if (needsRestart) {
+            Toast.makeText(context, R.string.restarting_launcher_changes, Toast.LENGTH_SHORT).show()
+            Utilities.restart()
+        }
+    }
+
     companion object {
+        @JvmField var needsRestart: Boolean = false
+
 
         @JvmField var INSTANCE = DaggerSingletonObject { it.launcherAppState }
 

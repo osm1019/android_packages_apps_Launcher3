@@ -374,7 +374,8 @@ public class DeviceProfile {
                 /*typeIndex*/ mTypeIndex,
                 /*metrics*/ mMetrics,
                 /*panelCount*/ getPanelCount(),
-                /*iconSizePx*/ max(1, pxFromDp(inv.iconSize[mTypeIndex], mMetrics)),
+                /*iconSizePx*/ max(1, pxFromDp(inv.iconSize[mTypeIndex], mMetrics)
+                        * LauncherPrefs.ICON_SIZE.get(context) / 100),
                 /*isFirstPass*/ true,
                 /*isSeascape*/ isSeascape(),
                 /*hotseatProfile*/ hotseatProfileInitialValues
@@ -420,6 +421,12 @@ public class DeviceProfile {
                     getAllAppsProfile().getCellHeightPx()
                             + Utilities.calculateTextHeight(getAllAppsProfile().getIconTextSizePx())
             );
+        }
+
+        int rowHeight = LauncherPrefs.ROW_HEIGHT.get(context);
+        if (rowHeight != 100) {
+            mAllAppsProfile = getAllAppsProfile().copyWithCellHeightPx(Math.max(1,
+                    getAllAppsProfile().getCellHeightPx() * rowHeight / 100));
         }
 
         mBottomSheetProfile = BottomSheetProfile.Factory.createBottomSheetProfile(

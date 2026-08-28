@@ -33,6 +33,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.launcher3.DeviceProfile;
+import com.android.launcher3.LauncherPrefs;
 import com.android.launcher3.R;
 import com.android.launcher3.anim.AnimatedFloat;
 import com.android.launcher3.statemanager.StatefulContainer;
@@ -100,7 +101,8 @@ public class SysUiScrim implements View.OnAttachStateChangeListener {
 
         mTopMaskHeight = ResourceUtils.pxFromDp(TOP_MASK_HEIGHT_DP, dm);
         mBottomMaskHeight = ResourceUtils.pxFromDp(BOTTOM_MASK_HEIGHT_DP, dm);
-        mHideSysUiScrim = Themes.getAttrBoolean(view.getContext(), R.attr.isWorkspaceDarkText);
+        mHideSysUiScrim = Themes.getAttrBoolean(view.getContext(), R.attr.isWorkspaceDarkText)
+                || !LauncherPrefs.SHOW_TOP_SHADOW.get(view.getContext());
 
         mTopMaskBitmap = mHideSysUiScrim ? null : createDitheredAlphaMask(mTopMaskHeight,
                 new int[]{0x3DFFFFFF, 0x0AFFFFFF, 0x00FFFFFF},

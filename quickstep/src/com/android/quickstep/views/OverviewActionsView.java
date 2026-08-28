@@ -17,6 +17,7 @@
 package com.android.quickstep.views;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.util.AttributeSet;
@@ -33,11 +34,14 @@ import androidx.annotation.Nullable;
 
 import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.Insettable;
+import com.android.launcher3.LauncherPrefs;
 import com.android.launcher3.R;
+import com.android.launcher3.Utilities;
 import com.android.launcher3.anim.AnimatedFloat;
 import com.android.launcher3.display.DisplayController;
 import com.android.launcher3.util.MultiValueAlpha;
 import com.android.launcher3.util.NavigationMode;
+import com.android.launcher3.util.VibratorWrapper;
 import com.android.quickstep.TaskOverlayFactory.OverlayUICallbacks;
 import com.android.quickstep.util.LayoutUtils;
 import com.android.wm.shell.shared.TypefaceUtils;
@@ -51,7 +55,7 @@ import java.util.Arrays;
  * View for showing action buttons in Overview
  */
 public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayout
-        implements OnClickListener, Insettable {
+        implements OnClickListener, Insettable, SharedPreferences.OnSharedPreferenceChangeListener {
     public static final String TAG = "OverviewActionsView";
     private final Rect mInsets = new Rect();
 
@@ -168,6 +172,11 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
     private boolean mIsGroupedTask = false;
     private boolean mCanSaveAppPair = false;
 
+    private boolean mScreenshot;
+    private boolean mClearAll;
+    private boolean mLens;
+    private SharedPreferences mPrefs;
+
     public OverviewActionsView(Context context) {
         this(context, null);
     }
@@ -178,6 +187,22 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
 
     public OverviewActionsView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr, 0);
+        mPrefs = LauncherPrefs.getPrefs(context);
+        mScreenshot = LauncherPrefs.RECENTS_SCREENSHOT.get(context);
+        mClearAll = LauncherPrefs.RECENTS_CLEAR_ALL.get(context);
+        mLens = LauncherPrefs.RECENTS_LENS.get(context);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mPrefs.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        mPrefs.unregisterOnSharedPreferenceChangeListener(this);
+        super.onDetachedFromWindow();
     }
 
     @Override
@@ -208,11 +233,43 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
         // The screenshot button is implemented as a Button in launcher3 and NexusLauncher, but is
         // an ImageButton in go launcher (does not share a common class with Button). Take care when
         // casting this.
+        updateActionVisibilities();
+    }
+
+    private void updateActionVisibilities() {
         View screenshotButton = findViewById(R.id.action_screenshot);
-        screenshotButton.setOnClickListener(this);
+        if (screenshotButton != null) {
+            screenshotButton.setOnClickListener(this);
+            screenshotButton.setVisibility(mScreenshot ? VISIBLE : GONE);
+        }
         mSplitButton = findViewById(R.id.action_split);
         mSplitButton.setOnClickListener(this);
         mSaveAppPairButton.setOnClickListener(this);
+
+        View lensButton = findViewById(R.id.action_lens);
+        if (lensButton != null) {
+            lensButton.setOnClickListener(this);
+            lensButton.setVisibility(mLens && Utilities.isGSAEnabled(getContext()) ? VISIBLE : GONE);
+        }
+        View clearAllButton = findViewById(R.id.action_clear_all);
+        if (clearAllButton != null) {
+            clearAllButton.setOnClickListener(this);
+            clearAllButton.setVisibility(mClearAll ? VISIBLE : GONE);
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        if (LauncherPrefs.RECENTS_SCREENSHOT.getSharedPrefKey().equals(key)) {
+            mScreenshot = prefs.getBoolean(key, true);
+        } else if (LauncherPrefs.RECENTS_CLEAR_ALL.getSharedPrefKey().equals(key)) {
+            mClearAll = prefs.getBoolean(key, true);
+        } else if (LauncherPrefs.RECENTS_LENS.getSharedPrefKey().equals(key)) {
+            mLens = prefs.getBoolean(key, false);
+        } else {
+            return;
+        }
+        updateActionVisibilities();
     }
 
     /**
@@ -231,11 +288,18 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
         }
         int id = view.getId();
         if (id == R.id.action_screenshot) {
+            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
             mCallbacks.onScreenshot();
         } else if (id == R.id.action_split) {
             mCallbacks.onSplit();
         } else if (id == R.id.action_save_app_pair) {
             mCallbacks.onSaveAppPair();
+        } else if (id == R.id.action_clear_all) {
+            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
+            mCallbacks.onClearAllTasksRequested();
+        } else if (id == R.id.action_lens) {
+            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
+            mCallbacks.onLens();
         }
     }
 

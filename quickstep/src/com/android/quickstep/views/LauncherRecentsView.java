@@ -34,6 +34,7 @@ import androidx.annotation.Nullable;
 
 import com.android.launcher3.Launcher;
 import com.android.launcher3.LauncherState;
+import com.android.launcher3.R;
 import com.android.launcher3.desktop.DesktopRecentsTransitionController;
 import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.statehandlers.DepthController;
@@ -187,6 +188,20 @@ public class LauncherRecentsView extends RecentsView<QuickstepLauncher, Launcher
         if (finalState.isRecentsViewVisible && finalState != OVERVIEW_MODAL_TASK) {
             setTaskBorderEnabled(true);
         }
+        updateMemInfoVisibility(finalState.isRecentsViewVisible);
+    }
+
+    private void updateMemInfoVisibility(boolean recentsVisible) {
+        android.view.View parent = (android.view.View) getParent();
+        if (parent == null) {
+            return;
+        }
+        MemInfoView memInfo = parent.findViewById(R.id.meminfo);
+        if (memInfo == null) {
+            return;
+        }
+        memInfo.setDp(mContainer.getDeviceProfile());
+        memInfo.setVisibility(recentsVisible ? VISIBLE : GONE);
     }
 
     @Override

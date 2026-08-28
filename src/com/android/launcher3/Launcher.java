@@ -495,7 +495,12 @@ public class Launcher extends StatefulActivity<LauncherState>
         // Listen for screen turning off
         ScreenOnTracker.INSTANCE.get(this).addListener(mScreenOnListener);
         getSystemUiController().updateUiState(SystemUiController.UI_STATE_BASE_WINDOW,
-                Themes.getAttrBoolean(this, R.attr.isWorkspaceDarkText));
+                Themes.getAttrBoolean(this, R.attr.isWorkspaceDarkText)
+                        || LauncherPrefs.DARK_STATUS_BAR.get(this));
+        if (!LauncherPrefs.SHOW_STATUS_BAR.get(this)) {
+            getWindow().getInsetsController().hide(
+                    android.view.WindowInsets.Type.statusBars());
+        }
 
         mOverlayManager = getDefaultOverlay();
 
@@ -602,6 +607,9 @@ public class Launcher extends StatefulActivity<LauncherState>
      * Call this after onCreate to set or clear overlay.
      */
     public void setLauncherOverlay(LauncherOverlayTouchProxy overlay) {
+        if (overlay != null && !LauncherPrefs.ENABLE_MINUS_ONE.get(this)) {
+            overlay = null;
+        }
         mWorkspace.setLauncherOverlay(overlay);
     }
 
@@ -1109,6 +1117,7 @@ public class Launcher extends StatefulActivity<LauncherState>
     protected void onResume() {
         TraceHelper.INSTANCE.beginSection(ON_RESUME_EVT);
         super.onResume();
+        LauncherAppState.getInstance(this).checkIfRestartNeeded();
         mLauncherUiState.setIsResumedActivity(true);
         DragView.removeAllViews(this);
         TraceHelper.INSTANCE.endSection();
@@ -1980,6 +1989,14 @@ public class Launcher extends StatefulActivity<LauncherState>
                 mOnDeferredActivityLaunchCallback = null;
             }
             return result;
+        }
+
+        if (item != null && item.getTargetPackage() != null
+                && com.android.launcher3.lineage.trust.AppLockHelper.getInstance(this)
+                .isPackageProtected(item.getTargetPackage())) {
+            Utilities.showLockScreen(this, getString(R.string.trust_apps_manager_name),
+                    () -> super.startActivitySafely(v, intent, item));
+            return new RunnableList();
         }
 
         RunnableList result = super.startActivitySafely(v, intent, item);

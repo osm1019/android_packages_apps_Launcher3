@@ -32,6 +32,7 @@ import androidx.annotation.Nullable;
 
 import com.android.app.animation.Interpolators;
 import com.android.launcher3.Flags;
+import com.android.launcher3.LauncherPrefs;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.anim.AnimatedFloat;
@@ -207,7 +208,8 @@ public class BaseDepthControllerImpl<
 
     protected boolean shouldBlur() {
         boolean hasOpaqueBg = mContainer.getScrimView().isFullyOpaque();
-        return mCrossWindowBlursEnabled && !hasOpaqueBg && !mPauseBlurs;
+        return mCrossWindowBlursEnabled && !hasOpaqueBg && !mPauseBlurs
+                && LauncherPrefs.ANIMATION_BLUR.get(mContainer);
     }
 
     protected void onInvalidSurface() { }
@@ -233,7 +235,11 @@ public class BaseDepthControllerImpl<
         }
 
         if (windowToken != null) {
-            mWallpaperManager.setWallpaperZoomOut(windowToken, wallpaperZoom);
+            float zoom = wallpaperZoom;
+            if (!LauncherPrefs.ALLOW_WALLPAPER_ZOOMING.get(mContainer)) {
+                zoom = 1f;
+            }
+            mWallpaperManager.setWallpaperZoomOut(windowToken, zoom);
         }
 
         if (!BlurUtils.supportsBlursOnWindows()) {

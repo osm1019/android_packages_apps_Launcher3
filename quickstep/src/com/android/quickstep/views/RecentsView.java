@@ -3540,6 +3540,10 @@ public abstract class RecentsView<
         }
     }
 
+    public void dismissAllTasks() {
+        dismissAllTasks(mClearAllButton);
+    }
+
     @SuppressWarnings("unused")
     private void dismissAllTasks(View view) {
         InteractionJankMonitorWrapper.begin(this, Cuj.CUJ_LAUNCHER_OVERVIEW_CLEAR_ALL);

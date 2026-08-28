@@ -29,6 +29,16 @@
         android:id="@+id/overview_actions_view"
         layout="@layout/overview_actions_container" />
 
+    <com.android.quickstep.views.MemInfoView
+        android:id="@+id/meminfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:paddingBottom="8dp"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
     <include
         android:id="@+id/empty_recents_message_view"
         layout="@layout/overview_empty_recents_message"

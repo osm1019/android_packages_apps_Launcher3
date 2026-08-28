@@ -27,6 +27,6 @@ open class QsbWidgetFactory @Inject constructor() {
 
     open fun createView(container: ViewGroup): View {
         return LayoutInflater.from(container.context)
-            .inflate(R.layout.qsb_container_hotseat, container, false)
+            .inflate(R.layout.search_container_hotseat, container, false)
     }
 }

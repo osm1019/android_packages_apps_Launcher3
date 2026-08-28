@@ -47,7 +47,9 @@ import androidx.annotation.Nullable;
 
 import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.DeviceProfile.OnDeviceProfileChangeListener;
+import com.android.launcher3.ExtendedEditText;
 import com.android.launcher3.Flags;
+import com.android.launcher3.LauncherPrefs;
 import com.android.launcher3.Launcher;
 import com.android.launcher3.LauncherState;
 import com.android.launcher3.R;
@@ -206,6 +208,7 @@ public class AllAppsTransitionController
     public void setState(LauncherState state) {
         setProgress(state.getVerticalProgress(mLauncher));
         setAlphas(state, new StateAnimationConfig(), NO_ANIM_PROPERTY_SETTER);
+        maybeOpenKeyboard(state);
     }
 
     @Override
@@ -305,6 +308,13 @@ public class AllAppsTransitionController
             // Reset scale after switching states.
             builder.addEndListener(success -> mAllAppScale.updateValue(1f));
         }
+        if (ALL_APPS.equals(toState)) {
+            builder.addEndListener(success -> {
+                if (success) {
+                    maybeOpenKeyboard(toState);
+                }
+            });
+        }
 
         float targetProgress = toState.getVerticalProgress(mLauncher);
         if (Float.compare(mProgress, targetProgress) == 0) {
@@ -397,5 +407,19 @@ public class AllAppsTransitionController
      */
     public void setShiftRange(float shiftRange) {
         mShiftRange = shiftRange;
+    }
+
+    private void maybeOpenKeyboard(LauncherState state) {
+        if (!ALL_APPS.equals(state) || mAppsView == null) {
+            return;
+        }
+        if (!LauncherPrefs.DRAWER_SEARCH.get(mLauncher)
+                || !LauncherPrefs.DRAWER_OPEN_KEYBOARD.get(mLauncher)) {
+            return;
+        }
+        ExtendedEditText editText = mAppsView.getSearchUiManager().getEditText();
+        if (editText != null) {
+            editText.post(editText::showKeyboard);
+        }
     }
 }

@@ -222,6 +222,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     private int mLineIndicatorColor;
     @ViewDebug.ExportedProperty(category = "launcher")
     private float mLineIndicatorWidth;
+    private boolean mThemeAllAppsIcons;
 
     private final String mMinimizedStateDescription;
     private final String mRunningStateDescription;
@@ -332,9 +333,10 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
         mDisplay = a.getInteger(R.styleable.BubbleTextView_iconDisplay, DISPLAY_WORKSPACE);
         final int defaultIconSize;
+        float fontScale = LauncherPrefs.FONT_SIZE.get(context) / 100f;
         if (mDisplay == DISPLAY_WORKSPACE) {
             setTextSize(TypedValue.COMPLEX_UNIT_PX,
-                    mDeviceProfile.getWorkspaceProfile().getIconTextSizePx());
+                    mDeviceProfile.getWorkspaceProfile().getIconTextSizePx() * fontScale);
             setCompoundDrawablePadding(
                     mDeviceProfile.getWorkspaceProfile().getIconDrawablePaddingPx());
             defaultIconSize = mDeviceProfile.getWorkspaceProfile().getIconSizePx();
@@ -342,10 +344,11 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         } else if (mDisplay == DISPLAY_ALL_APPS || mDisplay == DISPLAY_PREDICTION_ROW
                 || mDisplay == DISPLAY_SEARCH_RESULT_APP_ROW) {
             setTextSize(TypedValue.COMPLEX_UNIT_PX,
-                    mDeviceProfile.getAllAppsProfile().getIconTextSizePx());
+                    mDeviceProfile.getAllAppsProfile().getIconTextSizePx() * fontScale);
             setCompoundDrawablePadding(
                     mDeviceProfile.getAllAppsProfile().getIconDrawablePaddingPx());
             defaultIconSize = mDeviceProfile.getAllAppsProfile().getIconSizePx();
+            mThemeAllAppsIcons = LauncherPrefs.ALLAPPS_THEMED_ICONS.get(context);
         } else if (mDisplay == DISPLAY_FOLDER) {
             setTextSize(TypedValue.COMPLEX_UNIT_PX,
                     mDeviceProfile.getFolderProfile().getChildTextSizePx());
@@ -687,7 +690,10 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
     protected boolean shouldUseTheme() {
         return mDisplay == DISPLAY_WORKSPACE || mDisplay == DISPLAY_FOLDER
-                || mDisplay == DISPLAY_TASKBAR;
+                || mDisplay == DISPLAY_TASKBAR
+                || (mThemeAllAppsIcons && (mDisplay == DISPLAY_ALL_APPS
+                || mDisplay == DISPLAY_PREDICTION_ROW
+                || mDisplay == DISPLAY_SEARCH_RESULT_APP_ROW));
     }
 
     /**
@@ -746,6 +752,16 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
     private void applyLabel(@Nullable CharSequence label, @Nullable CharSequence contentDescription,
             boolean isTextWithArchivingIcon, boolean isItemDisabled) {
+        if ((mDisplay == DISPLAY_WORKSPACE
+                && !LauncherPrefs.SHOW_DESKTOP_LABELS.get(getContext()))
+                || (mDisplay == DISPLAY_ALL_APPS
+                && !LauncherPrefs.SHOW_DRAWER_LABELS.get(getContext()))) {
+            setText(null);
+            if (contentDescription != null) {
+                setContentDescription(contentDescription);
+            }
+            return;
+        }
         if (label != null) {
             mLastOriginalText = label;
             mLastModifiedText = mLastOriginalText;

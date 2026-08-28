@@ -319,6 +319,8 @@ android_library {
         "mediaprovider_exported_aconfig_flag_lib",
         "widget_picker_component",
         "workspace-functions",
+        "SettingsLib",
+        "chaldea.seraphixgoogle",
         // Compose dependencies
         "androidx.compose.runtime_runtime",
         "androidx.compose.material3_material3",

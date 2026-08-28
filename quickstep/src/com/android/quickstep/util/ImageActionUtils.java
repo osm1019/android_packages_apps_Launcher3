@@ -128,6 +128,32 @@ public class ImageActionUtils {
     /**
      * Launch the activity to share image.
      */
+    public static void startLensActivity(Context context, Supplier<Bitmap> bitmapSupplier,
+            Rect crop, String tag) {
+        UI_HELPER_EXECUTOR.execute(() -> {
+            Bitmap bitmap = bitmapSupplier.get();
+            if (bitmap == null) {
+                Log.e(tag, "No snapshot available, not sharing bitmap.");
+                return;
+            }
+            Uri uri = getImageUri(bitmap, crop, context, tag);
+            Intent intent = new Intent(Intent.ACTION_SEND)
+                    .setType("image/png")
+                    .putExtra(Intent.EXTRA_STREAM, uri)
+                    .setPackage("com.google.android.googlequicksearchbox")
+                    .setComponent(new ComponentName(
+                            "com.google.android.googlequicksearchbox",
+                            "com.google.android.apps.search.lens.LensExportedActivity"))
+                    .addFlags(FLAG_GRANT_READ_URI_PERMISSION)
+                    .addFlags(FLAG_ACTIVITY_NEW_TASK);
+            try {
+                context.startActivity(intent);
+            } catch (ActivityNotFoundException e) {
+                Log.e(tag, "Unable to start lens", e);
+            }
+        });
+    }
+
     public static void startShareActivity(Context context, Supplier<Bitmap> bitmapSupplier,
             Rect crop, Intent intent, String tag) {
         UI_HELPER_EXECUTOR.execute(() -> {

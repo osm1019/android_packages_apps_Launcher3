@@ -19,6 +19,7 @@ package com.android.launcher3;
 import static com.android.launcher3.Flags.enableCursorDrivenWorkflows;
 import static com.android.launcher3.Flags.enableMouseInteractionChanges;
 import static com.android.launcher3.Flags.reduceWorkspaceBlurUsage;
+import static com.android.launcher3.util.Executors.MAIN_EXECUTOR;
 import static com.android.launcher3.folder.ClippedFolderIconLayoutRule.ICON_OVERLAP_FACTOR;
 import static com.android.launcher3.graphics.ShapeDelegate.DEFAULT_PATH_SIZE;
 import static com.android.launcher3.icons.IconNormalizer.ICON_VISIBLE_AREA_FACTOR;
@@ -29,9 +30,11 @@ import static com.android.window.flags.Flags.enableNonDefaultDisplaySplitBugfix;
 
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
+import android.app.KeyguardManager;
 import android.app.Person;
 import android.app.WallpaperManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -43,10 +46,14 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.BiometricPrompt;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
+import android.os.CancellationSignal;
 import android.os.DeadObjectException;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.TransactionTooLargeException;
 import android.text.Spannable;
@@ -96,6 +103,14 @@ public final class Utilities {
 
     private static final Matrix sMatrix = new Matrix();
     private static final Matrix sInverseMatrix = new Matrix();
+
+    private static final long WAIT_BEFORE_RESTART = 300;
+    private static final Object sRestartLock = new Object();
+    private static boolean sRestartScheduled;
+    public static final String GSA_PACKAGE = "com.google.android.googlequicksearchbox";
+    public static final String LENS_ACTIVITY =
+            "com.google.android.apps.search.lens.LensExportedActivity";
+    public static final String LENS_URI = "google://lens";
 
     public static final String[] EMPTY_STRING_ARRAY = new String[0];
     public static final Person[] EMPTY_PERSON_ARRAY = new Person[0];
@@ -941,5 +956,75 @@ public final class Utilities {
     public static boolean shouldReduceWorkspaceBlurUsage(Context context) {
         return reduceWorkspaceBlurUsage() && context.getResources().getBoolean(
                 R.bool.reduce_workspace_blur_usage);
+    }
+
+    public static void restart() {
+        synchronized (sRestartLock) {
+            if (sRestartScheduled) {
+                return;
+            }
+            sRestartScheduled = true;
+        }
+
+        MAIN_EXECUTOR.getHandler().postDelayed(() -> {
+            System.exit(0);
+        }, WAIT_BEFORE_RESTART);
+    }
+
+    public static boolean isWorkspaceEditAllowed(Context context) {
+        return !LauncherPrefs.WORKSPACE_LOCK.get(context);
+    }
+
+    public static boolean isGSAEnabled(Context context) {
+        try {
+            return context.getPackageManager().getApplicationInfo(GSA_PACKAGE, 0).enabled;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
+    public static boolean showQSB(Context context) {
+        return isGSAEnabled(context) && LauncherPrefs.DOCK_SEARCH.get(context);
+    }
+
+    public static boolean isMusicSearchEnabled(Context context) {
+        return isGSAEnabled(context) && LauncherPrefs.DOCK_MUSIC_SEARCH.get(context);
+    }
+
+    public static boolean blurBackgroundAtAppLaunch(Context context) {
+        return LauncherPrefs.ANIMATION_BLUR.get(context);
+    }
+
+    public static boolean hasSecureKeyguard(Context context) {
+        KeyguardManager keyguardManager = context.getSystemService(KeyguardManager.class);
+        return keyguardManager != null && keyguardManager.isKeyguardSecure();
+    }
+
+    public static void showLockScreen(Context context, String title, Runnable onSuccess) {
+        KeyguardManager keyguardManager = context.getSystemService(KeyguardManager.class);
+        if (keyguardManager == null || !keyguardManager.isKeyguardSecure()) {
+            onSuccess.run();
+            return;
+        }
+        BiometricPrompt.AuthenticationCallback callback =
+                new BiometricPrompt.AuthenticationCallback() {
+                    @Override
+                    public void onAuthenticationSucceeded(
+                            BiometricPrompt.AuthenticationResult result) {
+                        onSuccess.run();
+                    }
+
+                    @Override
+                    public void onAuthenticationError(int errorCode, CharSequence errString) {
+                    }
+                };
+        int authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                | BiometricManager.Authenticators.BIOMETRIC_WEAK;
+        BiometricPrompt prompt = new BiometricPrompt.Builder(context)
+                .setTitle(title)
+                .setAllowedAuthenticators(authenticators)
+                .build();
+        Handler handler = new Handler(Looper.getMainLooper());
+        prompt.authenticate(new CancellationSignal(), r -> handler.post(r), callback);
     }
 }
