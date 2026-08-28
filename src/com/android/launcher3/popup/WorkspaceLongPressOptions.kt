@@ -46,6 +46,7 @@ import com.android.launcher3.testing.TestLogging
 import com.android.launcher3.testing.shared.TestProtocol
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.views.OptionsPopupView.OptionItem
+import com.android.launcher3.widgetpicker.WidgetPickerActivity
 
 /** Class to create default set of long-press options. */
 object WorkspaceLongPressOptions {
@@ -244,8 +245,7 @@ object WorkspaceLongPressOptions {
             Toast.makeText(ctx, R.string.safemode_widget_error, Toast.LENGTH_SHORT).show()
             return false
         } else {
-            val intent = Intent(Intent.ACTION_PICK)
-            intent.setPackage(ctx.packageName)
+            val intent = Intent(ctx, WidgetPickerActivity::class.java)
             if (ctx !is android.app.Activity) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }

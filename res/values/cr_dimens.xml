@@ -23,7 +23,8 @@
     <dimen name="preference_icon_foreground_image_inset">12dp</dimen>
 
     <!-- Meminfo in overview -->
-    <dimen name="meminfo_claimed_height">16dp</dimen>
+    <dimen name="meminfo_claimed_height">24dp</dimen>
+    <dimen name="workspace_top_padding_extra">20dp</dimen>
 
     <!-- Overview scrolling scale animation -->
     <dimen name="overview_scroll_scale">0.9</dimen>

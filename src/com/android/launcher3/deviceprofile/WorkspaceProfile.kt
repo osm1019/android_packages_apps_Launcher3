@@ -161,7 +161,8 @@ data class WorkspaceProfile(
                 edgeMarginPx = edgeMarginPx,
                 workspacePageIndicatorHeight = workspacePageIndicatorHeight,
                 workspacePageIndicatorOverlapWorkspace = workspacePageIndicatorOverlapWorkspace,
-                workspaceTopPadding = workspaceTopPadding,
+                workspaceTopPadding = workspaceTopPadding +
+                    res.getDimensionPixelSize(R.dimen.workspace_top_padding_extra),
                 workspaceBottomPadding = workspaceBottomPadding,
                 hotseatBarBottomSpacePx = hotseatProfile.barBottomSpacePx,
                 hotseatQsbSpace = hotseatProfile.qsbSpace,
@@ -450,7 +451,8 @@ data class WorkspaceProfile(
                 if (deviceProperties.isTwoPanels) cellLayoutBorderSpacePx.x / 2
                 else res.getDimensionPixelSize(R.dimen.cell_layout_padding)
 
-            val workspaceTopPadding = responsiveWorkspaceHeightSpec.startPaddingPx
+            val workspaceTopPadding = responsiveWorkspaceHeightSpec.startPaddingPx +
+                    res.getDimensionPixelSize(R.dimen.workspace_top_padding_extra)
             val workspaceBottomPadding = responsiveWorkspaceHeightSpec.endPaddingPx
             val desiredWorkspaceHorizontalMarginPx = responsiveWorkspaceWidthSpec.startPaddingPx
             val noInsetWorkspacePadding =
